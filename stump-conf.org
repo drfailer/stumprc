@@ -37,33 +37,37 @@ Load modules from the contrib repo.
 
 ** Theme
 #+BEGIN_SRC lisp
-      (setf *colors*
-	    '("#000000"   ;; black
-              "#972500"   ;; red
-              "#315b00"   ;; green
-              "#813e00"   ;; yellow
-              "#0031a9"   ;; blue
-              "#721045"   ;; magenta
-              "#00538b"   ;; cyan
-              "#f0f0f0")) ;; white
+  (setf *colors*
+	'("#000000"   ;black
+	  "#ff8059"   ;red
+	  "#44bc44"   ;green
+	  "#d0bc00"   ;yellow
+	  "#2fafff"   ;blue
+	  "#feacd0"   ;magenta
+	  "#00d3d0"   ;cyan
+	  "#f4f4f4")) ;white
 
-      (setf *default-bg-color* "#000000")
-      (update-color-map (current-screen))
+  (setf *default-bg-color* "#000000")
+  (update-color-map (current-screen))
 #+END_SRC
 
 ** Modeline
 #+BEGIN_SRC lisp
-  ;;; Mode-Line
-  (load-module "battery-portable")
+  (setf *mode-line-timeout* 2)
+  (setf *group-format* "%t")
+  (setf *window-format* "%n: %30t")
 
+  ;; colors
   (setf *mode-line-background-color* (car *colors*)
 	,*mode-line-foreground-color* (car (last *colors*))
 	,*mode-line-timeout* 1)
 
+  (load-module "battery-portable")
+
   (setf *screen-mode-line-format*
 	(list
 	 ;; Groups
-	 " ^7[^B^4%n^7^b] "
+	 " ^7[^B^5%n^7^b] "
 	 ;; Pad to right
 	 "^>"
 	 '(:eval (when (> *reps* 0)
@@ -179,12 +183,6 @@ so it will not work in a terminal, so I need to remap it.
      ("C-p"       . "Up")
      ("C-f"       . "Right")
      ("C-b"       . "Left")
-     ("C-v"       . "Next")
-     ("M-v"       . "Prior")
-     ("M-w"       . "C-c")
-     ("C-y"       . "C-v")
-     ("M-<"       . "Home")
-     ("M->"       . "End")
      ("C-M-b"     . "M-Left")
      ("C-M-f"     . "M-Right")
      ("M-f"       . "C-Right")
@@ -225,9 +223,9 @@ Display the command prompt in the center and the messages on the left.
   (setf *message-window-gravity* :center
 	,*window-border-style* :thin
 	,*message-window-padding* 3
-	,*maxsize-border-width* 2
-	,*normal-border-width* 2
-	,*transient-border-width* 2
+	,*maxsize-border-width* 1
+	,*normal-border-width* 1
+	,*transient-border-width* 1
 	stumpwm::*float-window-border* 1
 	stumpwm::*float-window-title-height* 1)
 #+END_SRC
