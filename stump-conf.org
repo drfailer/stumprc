@@ -1,0 +1,233 @@
+#+TITLE: STUMPWM CONFIG
+#+AUTHOR: drfailer
+#+PROPERTY: header-args :tangle config
+
+* Notes
+** Installation
+=stumpwm= as been is available via AUR.
+
+** Contrib modules
+It is possible to add third party modules usings the [[git@github.com:stumpwm/stumpwm-contrib.git][contrib repo]].
+~git clone git@github.com:stumpwm/stumpwm-contrib.git~
+
+** Mapping
+- using prefix key: ~(define-key *root-map* (kbd "k") command)~
+- not using prefix key: ~(define-key *top-map* (kbd "k") command)~
+
+** Defining my own mode map
+#+BEGIN_EXAMPLE
+(defvar *winner-map* (make-sparse-keymap))
+
+(define-key *root-map* (kbd "c") '*winner-map*)
+
+(define-key *winner-map* (kbd "h") "winner-undo")
+(define-key *winner-map* (kbd "l") "winner-redo")
+#+END_EXAMPLE
+
+** Example config
+I took this [[https://github.com/Gavinok/stump-conf/blob/main/config][config]] as example.
+
+* Basic
+** Contrib
+Load modules from the contrib repo.
+
+#+BEGIN_SRC lisp
+(init-load-path #p"~/.config/stumpwm/modules/")
+#+END_SRC
+
+** Theme
+#+BEGIN_SRC lisp
+      (setf *colors*
+	    '("#000000"   ;; black
+              "#972500"   ;; red
+              "#315b00"   ;; green
+              "#813e00"   ;; yellow
+              "#0031a9"   ;; blue
+              "#721045"   ;; magenta
+              "#00538b"   ;; cyan
+              "#f0f0f0")) ;; white
+
+      (setf *default-bg-color* "#000000")
+      (update-color-map (current-screen))
+#+END_SRC
+
+** Modeline
+#+BEGIN_SRC lisp
+  ;;; Mode-Line
+  (load-module "battery-portable")
+
+  (setf *mode-line-background-color* (car *colors*)
+	,*mode-line-foreground-color* (car (last *colors*))
+	,*mode-line-timeout* 1)
+
+  (setf *screen-mode-line-format*
+	(list
+	 ;; Groups
+	 " ^7[^B^4%n^7^b] "
+	 ;; Pad to right
+	 "^>"
+	 '(:eval (when (> *reps* 0)
+		   (format nil "^1^B(Reps ~A)^n " *reps*)))
+	 ;; Date
+	 "^7"
+	 "%d"
+	 ;; Battery
+	 " ^7[^n%B^7]^n "))
+
+  (defun enable-mode-line-everywhere ()
+    (loop for screen in *screen-list* do
+	  (loop for head in (screen-heads screen) do
+		(enable-mode-line screen head t))))
+  (enable-mode-line-everywhere)
+  ;; turn on/off the mode line for the current head only.
+  (define-key *top-map* (kbd "s-B") "mode-line")
+#+END_SRC
+
+* Keybindings
+** Prefix key
+I prefer to use =C-z= as prefix key (default =C-t=).
+#+BEGIN_SRC lisp
+(set-prefix-key (kbd "C-z"))
+#+END_SRC
+** config
+Quick load config file
+
+#+BEGIN_SRC lisp
+  (define-key *root-map* (kbd "C-l") "loadrc")
+#+END_SRC
+
+** hidden windows
+#+BEGIN_SRC lisp
+  (define-key *top-map* (kbd "s-n") "pull-hidden-next")
+  (define-key *top-map* (kbd "s-p") "pull-hidden-previous")
+#+END_SRC
+
+** focus and move windows
+#+BEGIN_SRC lisp
+  ;; move
+  (define-key *top-map* (kbd "s-h") "move-focus left")
+  (define-key *top-map* (kbd "s-j") "move-focus down")
+  (define-key *top-map* (kbd "s-k") "move-focus up")
+  (define-key *top-map* (kbd "s-l") "move-focus right")
+
+  ;; change focus
+  (define-key *top-map* (kbd "s-H") "move-window left")
+  (define-key *top-map* (kbd "s-J") "move-window down")
+  (define-key *top-map* (kbd "s-K") "move-window up")
+  (define-key *top-map* (kbd "s-L") "move-window right")
+
+  ;; focus on mouse hoover
+  (setf *mouse-focus-policy* :sloppy)
+
+  ;; delete window
+  (define-key *root-map* (kbd "d") "remove")
+
+  ;; delete window
+  (define-key *top-map* (kbd "s-C") "delete")
+
+  ;; focus one
+  (define-key *root-map* (kbd "o") "only")
+#+END_SRC
+
+** Groups
+#+BEGIN_SRC lisp
+  (define-key *groups-map* (kbd "s") "gselect")
+#+END_SRC
+
+** App lanch
+
+#+BEGIN_SRC lisp
+  ;; dmenu run
+  (define-key *top-map* (kbd "s-RET") "exec dmenu_run")
+
+  ;; dmenu mode map
+  (defvar *dm-map* (make-sparse-keymap))
+  (define-key *root-map* (kbd "P") '*dm-map*)
+
+  ;; dmenu scripts
+  (define-key *dm-map* (kbd "b") "exec ~/.config/suckless-builds/dmenu-scripts/brightness")
+  (define-key *dm-map* (kbd "e") "exec ~/.config/suckless-builds/dmenu-scripts/emoji")
+  (define-key *dm-map* (kbd "m") "exec ~/.config/suckless-builds/dmenu-scripts/manmenu")
+  (define-key *dm-map* (kbd "s") "exec ~/.config/suckless-builds/dmenu-scripts/sound")
+  (define-key *top-map* (kbd "s-f") "exec ~/.config/suckless-builds/dmenu-scripts/search")
+
+  ;; apps
+  (define-key *root-map* (kbd "C-c") "exec st")
+  (define-key *top-map* (kbd "s-C-RET") "exec st")
+#+END_SRC
+
+** Remapped keys
+Remap some default keyboard keys, for instance, =C-z= is my prefix key
+so it will not work in a terminal, so I need to remap it.
+
+*** st
+#+BEGIN_SRC lisp
+(define-remapped-keys
+  '(("(st)"
+     ("C-/" . "C-z"))))
+#+END_SRC
+
+*** brave and discord
+
+#+BEGIN_SRC lisp
+;;; Remaps
+(define-remapped-keys
+  '(("(discord|Brave)"
+     ("C-a"       . "Home")
+     ("C-e"       . "End")
+     ("C-n"       . "Down")
+     ("C-p"       . "Up")
+     ("C-f"       . "Right")
+     ("C-b"       . "Left")
+     ("C-v"       . "Next")
+     ("M-v"       . "Prior")
+     ("M-w"       . "C-c")
+     ("C-y"       . "C-v")
+     ("M-<"       . "Home")
+     ("M->"       . "End")
+     ("C-M-b"     . "M-Left")
+     ("C-M-f"     . "M-Right")
+     ("M-f"       . "C-Right")
+     ("M-b"       . "C-Left")
+     ("C-s"       . "C-f")
+     ("C-j"       . "C-k")
+     ("C-/"       . "C-z")
+     ("C-k"       . ("C-S-End" "C-x"))
+     ("C-d"       . "Delete"))))
+#+END_SRC
+
+** winner mode
+Like winner mode in emacs.
+
+#+BEGIN_SRC lisp
+  (load-module "winner-mode")
+
+  ;; winner mode map
+  (defvar *winner-map* (make-sparse-keymap))
+  (define-key *root-map* (kbd "C-w") '*winner-map*)
+
+  ;; mapping in winner mod map
+  (define-key *winner-map* (kbd "h") "winner-undo")
+  (define-key *winner-map* (kbd "l") "winner-redo")
+#+END_SRC
+
+* Window preferences
+** Command prompt
+Display the command prompt in the center and the messages on the left.
+
+#+BEGIN_SRC lisp
+  (setf *input-window-gravity* :center
+	,*message-window-input-gravity* :left)
+#+END_SRC
+
+** Message window
+#+BEGIN_SRC lisp
+  (setf *message-window-gravity* :center
+	,*window-border-style* :thin
+	,*message-window-padding* 3
+	,*maxsize-border-width* 2
+	,*normal-border-width* 2
+	,*transient-border-width* 2
+	stumpwm::*float-window-border* 1
+	stumpwm::*float-window-title-height* 1)
+#+END_SRC
