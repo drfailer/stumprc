@@ -111,6 +111,7 @@ Load modules from the contrib repo.
 * Keybindings
 ** Prefix key
 I prefer to use =C-z= as prefix key (default =C-t=).
+
 #+BEGIN_SRC lisp
 (set-prefix-key (kbd "C-z"))
 #+END_SRC
@@ -138,7 +139,7 @@ Quick load config file
   (define-key *top-map* (kbd "s-K") "move-window up")
   (define-key *top-map* (kbd "s-L") "move-window right")
 
-  ;; delete window
+  ;; delete frame
   (define-key *root-map* (kbd "d") "remove")
 
   ;; delete window
@@ -148,12 +149,20 @@ Quick load config file
   (define-key *root-map* (kbd "o") "only")
 
   ;; split
-  (define-key *root-map* (kbd "v") "hsplit")
+  (define-key *root-map* (kbd "v")        "hsplit")
+  (define-key *root-map* (kbd "&")        "only")
+  (define-key *root-map* (kbd "eacute")   "vsplit")
+  (define-key *root-map* (kbd "quotedbl") "hsplit")
+  (define-key *root-map* (kbd "agrave")   "remove")
+
+  ;; windows
+  (define-key *root-map* (kbd "b") "windowlist")
 #+END_SRC
 
 ** Groups
 #+BEGIN_SRC lisp
   (define-key *groups-map* (kbd "s") "gselect")
+  (define-key *groups-map* (kbd "d") "gnew-dynamic")
 #+END_SRC
 
 ** Function keys
@@ -241,6 +250,10 @@ Like winner mode in emacs.
   ;; mapping in winner mod map
   (define-key *winner-map* (kbd "h") "winner-undo")
   (define-key *winner-map* (kbd "l") "winner-redo")
+  ;; enable winner mode to save layout
+  (add-hook *post-command-hook* (lambda (command)
+				  (when (member command winner-mode:*default-commands*)
+				    (winner-mode:dump-group-to-file))))
 #+END_SRC
 
 ** Binwarp
