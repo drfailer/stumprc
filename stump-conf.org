@@ -49,25 +49,36 @@ Load modules from the contrib repo.
 
   (setf *default-bg-color* "#000000")
   (update-color-map (current-screen))
+  (set-border-color        "#000000")
+  (set-focus-color         "#2fafff")
+  (set-unfocus-color       "#000000")
+  (set-float-focus-color   "#2fafff")
+  (set-float-unfocus-color "#000000")
 #+END_SRC
 
-** Modeline
+** Mode-line
 #+BEGIN_SRC lisp
-  (setf *mode-line-timeout* 2)
-  (setf *group-format* "%t")
-  (setf *window-format* "%n: %30t")
-
   ;; colors
   (setf *mode-line-background-color* (car *colors*)
 	,*mode-line-foreground-color* (car (last *colors*))
 	,*mode-line-timeout* 1)
+  ;; border color
+  (setf *mode-line-border-color* (car (last *colors*))
+	,*mode-line-border-width* 0)
 
+  ;; modeline modules
   (load-module "battery-portable")
+
+  ;; format
+  (setf *group-format* "%t")
+  (setf *window-format* "%n: %30t")
 
   (setf *screen-mode-line-format*
 	(list
 	 ;; Groups
-	 " ^7[^B^5%n^7^b] "
+	 " ^7[^4%n^7] "
+	 ;; Windows
+	 " %W"
 	 ;; Pad to right
 	 "^>"
 	 '(:eval (when (> *reps* 0)
@@ -85,6 +96,16 @@ Load modules from the contrib repo.
   (enable-mode-line-everywhere)
   ;; turn on/off the mode line for the current head only.
   (define-key *top-map* (kbd "s-B") "mode-line")
+	 #+END_SRC
+
+** Gaps
+#+BEGIN_SRC
+  (load-module "swm-gaps")
+  (setf swm-gaps:*head-gaps-size*  0
+	swm-gaps:*inner-gaps-size* 4
+	swm-gaps:*outer-gaps-size* 4)
+  (when *initializing*
+    (swm-gaps:toggle-gaps))
 #+END_SRC
 
 * Keybindings
@@ -100,14 +121,11 @@ Quick load config file
   (define-key *root-map* (kbd "C-l") "loadrc")
 #+END_SRC
 
-** hidden windows
+** Windows
 #+BEGIN_SRC lisp
   (define-key *top-map* (kbd "s-n") "pull-hidden-next")
-  (define-key *top-map* (kbd "s-p") "pull-hidden-previous")
-#+END_SRC
+  (define-key *top-map* (kbd "s-N") "pull-hidden-previous")
 
-** focus and move windows
-#+BEGIN_SRC lisp
   ;; move
   (define-key *top-map* (kbd "s-h") "move-focus left")
   (define-key *top-map* (kbd "s-j") "move-focus down")
@@ -120,9 +138,6 @@ Quick load config file
   (define-key *top-map* (kbd "s-K") "move-window up")
   (define-key *top-map* (kbd "s-L") "move-window right")
 
-  ;; focus on mouse hoover
-  (setf *mouse-focus-policy* :sloppy)
-
   ;; delete window
   (define-key *root-map* (kbd "d") "remove")
 
@@ -131,6 +146,9 @@ Quick load config file
 
   ;; focus one
   (define-key *root-map* (kbd "o") "only")
+
+  ;; split
+  (define-key *root-map* (kbd "v") "hsplit")
 #+END_SRC
 
 ** Groups
@@ -138,17 +156,26 @@ Quick load config file
   (define-key *groups-map* (kbd "s") "gselect")
 #+END_SRC
 
-** App lanch
+** Function keys
+Recquire =pamixer= available in the AUR.
+
+#+BEGIN_SRC lisp
+(define-key *top-map* (kbd "XF86AudioRaiseVolume") "exec pamixer -i 2")
+(define-key *top-map* (kbd "XF86AudioLowerVolume") "exec pamixer -d 2")
+(define-key *top-map* (kbd "XF86AudioMute") "exec pamixer -t")
+(define-key *top-map* (kbd "XF86MonBrightnessDown") "exec xbacklight -dec 2")
+(define-key *top-map* (kbd "XF86MonBrightnessUp") "exec xbacklight -inc 2")
+#+END_SRC
+
+** App launch
 
 #+BEGIN_SRC lisp
   ;; dmenu run
-  (define-key *top-map* (kbd "s-RET") "exec dmenu_run")
+  (define-key *top-map* (kbd "s-p") "exec dmenu_run")
 
   ;; dmenu mode map
   (defvar *dm-map* (make-sparse-keymap))
   (define-key *root-map* (kbd "P") '*dm-map*)
-
-  ;; dmenu scripts
   (define-key *dm-map* (kbd "b") "exec ~/.config/suckless-builds/dmenu-scripts/brightness")
   (define-key *dm-map* (kbd "e") "exec ~/.config/suckless-builds/dmenu-scripts/emoji")
   (define-key *dm-map* (kbd "m") "exec ~/.config/suckless-builds/dmenu-scripts/manmenu")
@@ -158,6 +185,13 @@ Quick load config file
   ;; apps
   (define-key *root-map* (kbd "C-c") "exec st")
   (define-key *top-map* (kbd "s-C-RET") "exec st")
+
+
+  ;; app mode map
+  (defvar *app-map* (make-sparse-keymap))
+  (define-key *top-map* (kbd "s-A") '*app-map*)
+  (define-key *app-map* (kbd "m") "exec st -e neomutt")
+  (define-key *app-map* (kbd "k") "exec keepass")
 #+END_SRC
 
 ** Remapped keys
@@ -209,6 +243,23 @@ Like winner mode in emacs.
   (define-key *winner-map* (kbd "l") "winner-redo")
 #+END_SRC
 
+** Binwarp
+Allow to control the cursor with the keyboard like keynav.
+
+#+BEGIN_SRC lisp
+  (load-module "binwarp")
+
+  (binwarp:define-binwarp-mode my-binwarp-mode "s-m" (:map *top-map*)
+			       ((kbd "SPC") "ratclick 1")
+			       ((kbd "RET") "ratclick 3")
+			       ((kbd "h")   "binwarp left")
+			       ((kbd "j")   "binwarp down")
+			       ((kbd "k")   "binwarp up")
+			       ((kbd "l")   "binwarp right")
+			       ((kbd "i")   "init-binwarp")
+			       ((kbd "q")   "exit-binwarp"))
+#+END_SRC
+
 * Window preferences
 ** Command prompt
 Display the command prompt in the center and the messages on the left.
@@ -228,4 +279,9 @@ Display the command prompt in the center and the messages on the left.
 	,*transient-border-width* 1
 	stumpwm::*float-window-border* 1
 	stumpwm::*float-window-title-height* 1)
+#+END_SRC
+** Mouse focus
+#+BEGIN_SRC lisp
+  ;; focus on mouse hoover
+  (setf *mouse-focus-policy* :sloppy)
 #+END_SRC
