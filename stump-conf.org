@@ -70,13 +70,12 @@ Load modules from the contrib repo.
   (load-module "battery-portable")
 
   ;; format
-  (setf *group-format* "%t")
-  (setf *window-format* "%n: %30t")
+  (setf *window-format* "%n: %20t")
 
   (setf *screen-mode-line-format*
 	(list
 	 ;; Groups
-	 " ^7[^4%n^7] "
+	 " ^7[^4%g^7] "
 	 ;; Windows
 	 " %W"
 	 ;; Pad to right
@@ -99,11 +98,11 @@ Load modules from the contrib repo.
 	 #+END_SRC
 
 ** Gaps
-#+BEGIN_SRC
+#+BEGIN_SRC lisp
   (load-module "swm-gaps")
   (setf swm-gaps:*head-gaps-size*  0
-	swm-gaps:*inner-gaps-size* 4
-	swm-gaps:*outer-gaps-size* 4)
+	swm-gaps:*inner-gaps-size* 10
+	swm-gaps:*outer-gaps-size* 5)
   (when *initializing*
     (swm-gaps:toggle-gaps))
 #+END_SRC
@@ -122,7 +121,7 @@ Quick load config file
   (define-key *root-map* (kbd "C-l") "loadrc")
 #+END_SRC
 
-** Windows
+** Windows and frames
 #+BEGIN_SRC lisp
   (define-key *top-map* (kbd "s-n") "pull-hidden-next")
   (define-key *top-map* (kbd "s-N") "pull-hidden-previous")
@@ -163,6 +162,17 @@ Quick load config file
 #+BEGIN_SRC lisp
   (define-key *groups-map* (kbd "s") "gselect")
   (define-key *groups-map* (kbd "d") "gnew-dynamic")
+
+  ;; quickchange group
+  (define-key *top-map* (kbd "s-&")          "gselect 1")
+  (define-key *top-map* (kbd "s-eacute")     "gselect 2")
+  (define-key *top-map* (kbd "s-quotedbl")   "gselect 3")
+  (define-key *top-map* (kbd "s-apostrophe") "gselect 4")
+  (define-key *top-map* (kbd "s-parenleft")  "gselect 5")
+  (define-key *top-map* (kbd "s-minus")      "gselect 6")
+  (define-key *top-map* (kbd "s-egrave")     "gselect 7")
+  (define-key *top-map* (kbd "s-underscore") "gselect 9")
+  (define-key *top-map* (kbd "s-ccedilla")   "gselect 9")
 #+END_SRC
 
 ** Function keys
@@ -297,4 +307,19 @@ Display the command prompt in the center and the messages on the left.
 #+BEGIN_SRC lisp
   ;; focus on mouse hoover
   (setf *mouse-focus-policy* :sloppy)
+#+END_SRC
+
+** Dynamic group
+Master window ration for the dynamic group.
+
+#+BEGIN_SRC lisp
+  (setf *dynamic-group-master-split-ratio* 1/2)
+#+END_SRC
+
+** Groups
+Rename the default group at startup.
+
+#+BEGIN_SRC lisp
+  (when *initializing*
+    (grename "main"))
 #+END_SRC
