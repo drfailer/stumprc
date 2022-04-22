@@ -35,6 +35,13 @@ Load modules from the contrib repo.
 (init-load-path #p"~/.config/stumpwm/modules/")
 #+END_SRC
 
+** Startup message
+#+BEGIN_SRC lisp
+(setf *startup-message* "^5    Stump Window Manager ^0has initialized!
+Press ^2Ctrl+z ? ^0for Help. ^5\"Welcom Home Mr Failer!\"^n
+          Powered with ^02 Common Lisp ")
+#+END_SRC
+
 ** Theme
 #+BEGIN_SRC lisp
   (setf *colors*
@@ -49,19 +56,21 @@ Load modules from the contrib repo.
 
   (setf *default-bg-color* "#000000")
   (update-color-map (current-screen))
-  (set-border-color        "#000000")
+  (set-border-color        "#feacd0") ;; messages border
   (set-focus-color         "#2fafff")
   (set-unfocus-color       "#000000")
   (set-float-focus-color   "#2fafff")
   (set-float-unfocus-color "#000000")
+  (set-msg-border-width 1)
+  (setf *message-window-padding* 6)
 #+END_SRC
 
 ** Mode-line
 #+BEGIN_SRC lisp
   ;; colors
-  (setf *mode-line-background-color* (car *colors*)
-	,*mode-line-foreground-color* (car (last *colors*))
-	,*mode-line-timeout* 1)
+  (setf *mode-line-background-color* (car *colors*))
+  (setf *mode-line-foreground-color* (car (last *colors*)))
+  (setf *mode-line-timeout* 1)
   ;; border color
   (setf *mode-line-border-color* (car (last *colors*))
 	,*mode-line-border-width* 0)
@@ -70,14 +79,14 @@ Load modules from the contrib repo.
   (load-module "battery-portable")
 
   ;; format
-  (setf *window-format* "%n: %20t")
+  (setf *window-format* "%m%n%s%20t")
 
   (setf *screen-mode-line-format*
 	(list
 	 ;; Groups
-	 " ^7[^4%g^7] "
+	 " ^7[^4 %g ^n^7] "
 	 ;; Windows
-	 " %W"
+	 "^5 %W ^n"
 	 ;; Pad to right
 	 "^>"
 	 '(:eval (when (> *reps* 0)
@@ -107,6 +116,32 @@ Load modules from the contrib repo.
     (swm-gaps:toggle-gaps))
 #+END_SRC
 
+** Tests
+#+BEGIN_SRC lisp
+  ;; google search
+  (defcommand google-search (search) ((:rest "Search: "))
+	      (when search
+		(nsubstitute #\+ #\Space search)
+		(run-shell-command (concatenate 'string "brave https://google.com/search?q=" search))))
+
+  (define-key *root-map* (kbd "M-f") "google-search")
+
+  (defparameter *my-web-bm* '(("ent" "https://ent.uca.fr")
+			      ("github" "https://github.com/drfailer")
+			      ("latex" "https://oeis.org/wiki/List_of_LaTeX_mathematical_symbols")
+			      ("mailf" "https://mail.google.com/mail/u/0/?ogbl#inbox")
+			      ("mailp" "https://mail.google.com/mail/u/1/?ogbl#inbox")))
+  ;; search a web bookmark
+  ;; TODO: find a way to withraw the user choice anyway
+  ;; (select-from-menu returns nil if the entry is not bookmarked) and
+  ;; make a google search if the entry is not bookmarked.
+  (defcommand websearch () (:rest)
+	      (let ((choice (cadr (select-from-menu (current-screen) *my-web-bm* "Searching for: "))))
+		(when choice
+		  (run-shell-command (concatenate 'string "brave " choice)))))
+
+  (define-key *root-map* (kbd "C-f") "websearch")
+#+END_SRC
 * Keybindings
 ** Prefix key
 I prefer to use =C-z= as prefix key (default =C-t=).
@@ -139,7 +174,7 @@ Quick load config file
   (define-key *top-map* (kbd "s-L") "move-window right")
 
   ;; delete frame
-  (define-key *root-map* (kbd "d") "remove")
+  (define-key *root-map* (kbd "c") "remove")
 
   ;; delete window
   (define-key *top-map* (kbd "s-C") "delete")
@@ -173,6 +208,17 @@ Quick load config file
   (define-key *top-map* (kbd "s-egrave")     "gselect 7")
   (define-key *top-map* (kbd "s-underscore") "gselect 9")
   (define-key *top-map* (kbd "s-ccedilla")   "gselect 9")
+
+  ;; quick send to group
+  (define-key *top-map* (kbd "s-1") "gmove 1")
+  (define-key *top-map* (kbd "s-2") "gmove 2")
+  (define-key *top-map* (kbd "s-3") "gmove 3")
+  (define-key *top-map* (kbd "s-4") "gmove 4")
+  (define-key *top-map* (kbd "s-5") "gmove 5")
+  (define-key *top-map* (kbd "s-6") "gmove 6")
+  (define-key *top-map* (kbd "s-7") "gmove 7")
+  (define-key *top-map* (kbd "s-8") "gmove 9")
+  (define-key *top-map* (kbd "s-9") "gmove 9")
 #+END_SRC
 
 ** Function keys
