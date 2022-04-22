@@ -65,6 +65,11 @@ Press ^2Ctrl+z ? ^0for Help. ^5\"Welcom Home Mr Failer!\"^n
   (setf *message-window-padding* 6)
 #+END_SRC
 
+** Font
+#+BEGIN_SRC lisp
+(set-font "-xos4-terminus-medium-r-normal-*-14-*-*-*-*-*-*-*")
+#+END_SRC
+
 ** Mode-line
 #+BEGIN_SRC lisp
   ;; colors
@@ -195,7 +200,7 @@ Quick load config file
 
 ** Groups
 #+BEGIN_SRC lisp
-  (define-key *groups-map* (kbd "s") "gselect")
+  (define-key *groups-map* (kbd "b") "gselect")
   (define-key *groups-map* (kbd "d") "gnew-dynamic")
 
   ;; quickchange group
