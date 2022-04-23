@@ -4,7 +4,10 @@
 
 * Notes
 ** Installation
-=stumpwm= as been is available via AUR.
+- =stumpwm= as been is available via AUR.
+- Recquirement
+  - ~terminus-font~
+  - ~pamixer~
 
 ** Contrib modules
 It is possible to add third party modules usings the [[git@github.com:stumpwm/stumpwm-contrib.git][contrib repo]].
@@ -121,7 +124,7 @@ Press ^2Ctrl+z ? ^0for Help. ^5\"Welcom Home Mr Failer!\"^n
     (swm-gaps:toggle-gaps))
 #+END_SRC
 
-** Tests
+** Menus
 #+BEGIN_SRC lisp
   ;; google search
   (defcommand google-search (search) ((:rest "Search: "))
@@ -131,9 +134,11 @@ Press ^2Ctrl+z ? ^0for Help. ^5\"Welcom Home Mr Failer!\"^n
 
   (define-key *root-map* (kbd "M-f") "google-search")
 
+  ;; TODO: get this in a file
   (defparameter *my-web-bm* '(("ent" "https://ent.uca.fr")
 			      ("github" "https://github.com/drfailer")
 			      ("latex" "https://oeis.org/wiki/List_of_LaTeX_mathematical_symbols")
+			      ("youtube" "https://www.youtube.com/")
 			      ("mailf" "https://mail.google.com/mail/u/0/?ogbl#inbox")
 			      ("mailp" "https://mail.google.com/mail/u/1/?ogbl#inbox")))
   ;; search a web bookmark
